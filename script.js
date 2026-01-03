@@ -3,6 +3,8 @@ const itemInput = document.querySelector('#item-input');
 const itemList = document.querySelector('#item-list');
 const clearBtn = document.querySelector('#clear');
 const itemFilter = document.querySelector('#filter');
+const formBtn = itemForm.querySelector('button');
+let isEditMode = false;
 
 function displayItems() {
 	const itemsFromStorage = getItemFromStorage();
@@ -57,12 +59,18 @@ function createButton(classes) {
 function createIcon(classes) {
 	const icon = document.createElement('i');
 	icon.className = classes;
+	item.classList.add('edit-mode');
 	return icon;
+}
+function setItemToEdit(item) {
+	isEditMode = true;
 }
 
 function onClickItem(e) {
 	if (e.target.parentElement.classList.contains('remove-item')) {
 		removeItem(e.target.parentElement.parentElement);
+	} else {
+		setItemToEdit(e.target);
 	}
 }
 function removeItem(item) {
