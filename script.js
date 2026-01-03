@@ -59,11 +59,18 @@ function createButton(classes) {
 function createIcon(classes) {
 	const icon = document.createElement('i');
 	icon.className = classes;
-	item.classList.add('edit-mode');
+
 	return icon;
 }
 function setItemToEdit(item) {
 	isEditMode = true;
+	itemList
+		.querySelectorAll('li')
+		.forEach((i) => i.classList.remove('edit-mode'));
+	item.classList.add('edit-mode');
+	formBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Update Item';
+	formBtn.style.backgroundColor = '#228822';
+	itemInput.value = item.textContent;
 }
 
 function onClickItem(e) {
