@@ -19,6 +19,19 @@ function onAddItemSubmit(e) {
 		alert('Please add something');
 		return;
 	}
+	//check for edit mode
+	if (isEditMode) {
+		const itemToEdit = itemList.querySelector('.edit-mode');
+		removeItemFromStorage(itemToEdit.textContent);
+		itemToEdit.classList.remove('edit-mode');
+		itemToEdit.remove();
+		isEditMode = false;
+	} else {
+		if (checkIfItemExists(newItem)) {
+			alert('Item exits');
+			return;
+		}
+	}
 	addItemToDom(newItem);
 	addItemToStorage(newItem);
 	checkUi();
@@ -117,8 +130,12 @@ function filterItems(e) {
 		}
 	});
 }
-
+function checkIfItemExists(item) {
+	const itemsFromStorage = getItemFromStorage();
+	return itemsFromStorage.includes(item);
+}
 function checkUi() {
+	itemInput.value = '';
 	const items = itemList.querySelectorAll('li');
 	if (items.length === 0) {
 		itemFilter.style.display = 'none';
@@ -127,6 +144,9 @@ function checkUi() {
 		itemFilter.style.display = 'block';
 		clearBtn.style.display = 'block';
 	}
+	formBtn.innerHTML = '<i class="fa-solid fa-plus"><i/> Add item';
+	formBtn.backgroundColor = '#333';
+	isEditMode = false;
 }
 
 checkUi();
