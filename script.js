@@ -1,5 +1,3 @@
-const { Children } = require("react");
-
 const form = document.querySelector('#item-form');
 const formInput = document.querySelector('#item-input');
 const list = document.querySelector('#item-list');
@@ -20,18 +18,29 @@ function removeItem(e) {
 	if (e.target.parentElement.classList.contains('remove-item')) {
 		e.target.parentElement.parentElement.remove();
 	}
+	checkUi();
 }
 function clearAllListItem(e) {
 	while (list.firstChild) {
 		list.firstChild.remove();
+		checkUi();
 	}
 }
 
-function filterForItems() {
-	console.log(filter.value);
-	const filteredItem = filter.value.toLowerCase();
-    console.log(list.Children)
+function filterForItems(e) {
+	// console.log(filter.value);
+	const listItem = list.querySelectorAll('li');
+	const filteredItem = e.target.value.toLowerCase();
+	console.log(filteredItem);
+	listItem.forEach((item) => {
+		const text = item.textContent.toLocaleLowerCase();
 
+		if (text.includes(filteredItem)) {
+			item.style.display = 'flex';
+		} else {
+			item.style.display = 'none';
+		}
+	});
 }
 
 function onAddItem(newItem) {
@@ -40,6 +49,7 @@ function onAddItem(newItem) {
 	item.appendChild(button);
 	list.appendChild(item);
 	formInput.value = '';
+	checkUi();
 }
 function createListItem(text) {
 	const li = document.createElement('li');
@@ -56,6 +66,29 @@ function createButton() {
 	return button;
 }
 
+function getItemFromStorage() {
+	let itemFromStorage;
+	itemFromStorage = JSON.parse(localStorage.getItem('items'));
+	setItemToStorage(e);
+}
+
+function setItemToStorage(e) {}
+function removeItemFromStorage() {}
+
+function checkUi() {
+	const list = document.querySelector('#item-list');
+	// if(list.includes())
+	if (list.children.length <= 0) {
+		filter.style.display = 'none';
+		BtnClearAll.style.display = 'none';
+	} else {
+		filter.style.display = 'block';
+		BtnClearAll.style.display = 'block';
+	}
+}
+checkUi();
+console.log(list);
+console.log(list.children.length);
 filter.addEventListener('input', filterForItems);
 BtnClearAll.addEventListener('click', clearAllListItem);
 list.addEventListener('click', removeItem);
