@@ -3,35 +3,123 @@ const formInput = document.querySelector('#item-input');
 const list = document.querySelector('#item-list');
 const BtnClearAll = document.querySelector('#clear');
 const filter = document.querySelector('#filter');
+const submitButton = form.querySelector('.btn');
+let isEditMode = false;
 
-function onClickItem(e) {
+function checkIfItemsExists(item) {
+	const itemsFromStorage = getItemFromStorage();
+	return itemsFromStorage.includes(item);
+}
+
+function onAddItemSubmit(e) {
 	e.preventDefault();
-	const newItem = formInput.value.trim();
+	const newItem = formInput.value.toLowerCase().trim();
 	if (newItem === null || newItem === '') {
 		alert('kindly enter a value');
 		return;
 	}
-	onAddItem(newItem);
-}
 
-function removeItem(e) {
-	if (e.target.parentElement.classList.contains('remove-item')) {
-		e.target.parentElement.parentElement.remove();
+	if (isEditMode) {
+		const itemToEdit = list.querySelector('.edit-mode');
+		let newValue = formInput.value;
+		let itemFromStorage = getItemFromStorage();
+
+		let index = itemFromStorage.indexOf(oldValue);
+
+		if (index !== -1) {
+			itemFromStorage[index] = newValue;
+			localStorage.setItem('items', JSON.stringify(itemFromStorage));
+		}
+	} else {
+		if (checkIfItemsExists(item)) {
+			alert('duplicate kindly enter a new value');
+			formInput.value = '';
+			return;
+		}
 	}
+
+	addItemToDom(newItem);
+	addItemToStorage(newItem);
+
 	checkUi();
 }
-function clearAllListItem(e) {
-	while (list.firstChild) {
-		list.firstChild.remove();
+function addItemToStorage(item) {
+	const itemFromStorage = getItemFromStorage();
+	itemFromStorage.push(item);
+	localStorage.setItem('items', JSON.stringify(itemFromStorage));
+}
+
+function addItemToDom(newItem) {
+	const li = createListItem(newItem);
+	const button = createButton();
+	li.appendChild(button);
+	list.appendChild(li);
+	formInput.value = '';
+	checkUi();
+}
+
+function getItemFromStorage() {
+	let itemFromStorage;
+	if (localStorage.getItem('items') === null) {
+		itemFromStorage = [];
+	} else {
+		itemFromStorage = JSON.parse(localStorage.getItem('items'));
+	}
+	return itemFromStorage;
+}
+function onClickRemove(e) {
+	if (e.target.parentElement.classList.contains('remove-item')) {
+		removeItem(e.target.parentElement.parentElement);
+	} else {
+		if (e.target.tagName === 'LI') {
+			setItemToEditMode(e.target);
+		}
+	}
+}
+
+function setItemToEditMode(item) {
+	isEditMode = true;
+
+	list.querySelectorAll('li').forEach((i) => i.classList.remove('edit-mode'));
+
+	item.classList.add('edit-mode');
+	submitButton.innerHTML = `<i class="fa-solid fa-edit"></i> Update Item`;
+	submitButton.style.backgroundColor = '#228822';
+	formInput.value = item.firstChild.textContent;
+}
+
+function removeItem(item) {
+	if (confirm('Are you sure ?')) {
+		item.remove();
+		removeItemFromStorage(item.firstChild.textContent.trim());
 		checkUi();
 	}
 }
 
+function removeItemFromStorage(item) {
+	let itemFromStorage = getItemFromStorage();
+
+	itemFromStorage = itemFromStorage.filter((i) => i !== item);
+	console.log(itemFromStorage);
+	localStorage.setItem('items', JSON.stringify(itemFromStorage));
+}
+function removeAllItem() {
+	while (list.firstChild) {
+		list.firstChild.remove();
+	}
+	localStorage.removeItem('items');
+	checkUi();
+}
+function updateDisplay() {
+	let itemFromStorage = getItemFromStorage();
+	itemFromStorage.forEach((item) => addItemToDom(item));
+	checkUi();
+}
+
 function filterForItems(e) {
-	// console.log(filter.value);
 	const listItem = list.querySelectorAll('li');
 	const filteredItem = e.target.value.toLowerCase();
-	console.log(filteredItem);
+
 	listItem.forEach((item) => {
 		const text = item.textContent.toLocaleLowerCase();
 
@@ -43,14 +131,6 @@ function filterForItems(e) {
 	});
 }
 
-function onAddItem(newItem) {
-	const item = createListItem(newItem);
-	const button = createButton();
-	item.appendChild(button);
-	list.appendChild(item);
-	formInput.value = '';
-	checkUi();
-}
 function createListItem(text) {
 	const li = document.createElement('li');
 	const textItem = document.createTextNode(text);
@@ -66,15 +146,6 @@ function createButton() {
 	return button;
 }
 
-function getItemFromStorage() {
-	let itemFromStorage;
-	itemFromStorage = JSON.parse(localStorage.getItem('items'));
-	setItemToStorage(e);
-}
-
-function setItemToStorage(e) {}
-function removeItemFromStorage() {}
-
 function checkUi() {
 	const list = document.querySelector('#item-list');
 	// if(list.includes())
@@ -86,10 +157,12 @@ function checkUi() {
 		BtnClearAll.style.display = 'block';
 	}
 }
+
 checkUi();
-console.log(list);
-console.log(list.children.length);
+
 filter.addEventListener('input', filterForItems);
-BtnClearAll.addEventListener('click', clearAllListItem);
-list.addEventListener('click', removeItem);
-form.addEventListener('submit', onClickItem);
+BtnClearAll.addEventListener('click', removeAllItem);
+list.addEventListener('click', onClickRemove);
+form.addEventListener('submit', onAddItemSubmit);
+
+document.addEventListener('DOMContentLoaded', updateDisplay);
