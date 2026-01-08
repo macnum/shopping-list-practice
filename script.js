@@ -14,35 +14,45 @@ function checkIfItemsExists(item) {
 function onAddItemSubmit(e) {
 	e.preventDefault();
 	const newItem = formInput.value.toLowerCase().trim();
-	if (newItem === null || newItem === '') {
+	if (newItem === '') {
 		alert('kindly enter a value');
 		return;
 	}
 
 	if (isEditMode) {
 		const itemToEdit = list.querySelector('.edit-mode');
-		let newValue = formInput.value;
-		let itemFromStorage = getItemFromStorage();
+		const oldItemText = itemToEdit.firstChild.textContent.trim();
 
-		let index = itemFromStorage.indexOf(oldValue);
+		itemToEdit.firstChild.textContent = newItem;
+		let itemsFromStorage = getItemFromStorage();
+		itemsFromStorage = itemsFromStorage.map((item) =>
+			item === oldItemText ? newItem : item
+		);
 
-		if (index !== -1) {
-			itemFromStorage[index] = newValue;
-			localStorage.setItem('items', JSON.stringify(itemFromStorage));
-		}
+		localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+		exitEditMode();
 	} else {
-		if (checkIfItemsExists(item)) {
+		if (checkIfItemsExists(newItem)) {
 			alert('duplicate kindly enter a new value');
 			formInput.value = '';
 			return;
 		}
+		addItemToDom(newItem);
+		addItemToStorage(newItem);
 	}
-
-	addItemToDom(newItem);
-	addItemToStorage(newItem);
 
 	checkUi();
 }
+function exitEditMode() {
+	isEditMode = false;
+	list.querySelectorAll('li').forEach((li) =>
+		li.classList.remove('edit-mode')
+	);
+	submitButton.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+	submitButton.style.backgroundColor = '';
+	formInput.value = '';
+}
+
 function addItemToStorage(item) {
 	const itemFromStorage = getItemFromStorage();
 	itemFromStorage.push(item);
@@ -85,7 +95,7 @@ function setItemToEditMode(item) {
 	item.classList.add('edit-mode');
 	submitButton.innerHTML = `<i class="fa-solid fa-edit"></i> Update Item`;
 	submitButton.style.backgroundColor = '#228822';
-	formInput.value = item.firstChild.textContent;
+	formInput.value = item.firstChild.textContent.trim();
 }
 
 function removeItem(item) {
